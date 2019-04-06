@@ -1,3 +1,5 @@
 
 /.directory
 /.screenshot*.png
+
+__pycache__/
