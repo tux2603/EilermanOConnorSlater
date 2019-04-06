@@ -1,3 +1,4 @@
+import cv2
 
 def findCircles(image):
     print(vars(image))
