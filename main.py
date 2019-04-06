@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import pyautogui as p
 import Xlib
@@ -9,8 +10,6 @@ from PIL import Image
 from pynput.mouse import Button, Controller
 from random import random
 from threading import Thread
-
-from circles import findCircles
 
 
 def openWindow():
@@ -81,9 +80,16 @@ def login():
     return ((loc.left + 0.5 * loc.width, loc.top + 0.5 * loc.height))
 
 
-def deathSound():
+def onDeath():
     if SPEAK:
         os.system('espeak -p00 "oh no... I died!" &')
+    window.configure(width=1500, height=900)
+    display.sync()
+    sleep(2)
+    raw = window.get_image(0, 0, 1500, 900, Xlib.X.ZPixmap, 0xffffffff)
+    image = Image.frombytes('RGB', (1500, 900), raw._data['data'], 'raw', 'BGRX')
+    image.save('deaths/death-{}.png'.format(datetime.now()))
+    image.show()
 
 
 def captchaSound():
@@ -160,11 +166,7 @@ if __name__ == '__main__':
         # mouse.position = (random() * 500, random() * 500)
         sleep(1 / 144)
 
-    deathSound()
-    print('we ded')
-    print(vars(window.get_image(0, 0, 10, 10, Xlib.X.ZPixmap, 0xffffffff)), type(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)))
-    raw = window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)
-    image = Image.frombytes('RGB', (WIDTH, HEIGHT), raw._data['data'], 'raw', 'BGRX')
+    onDeath()
 
     findCircles(image)
     image.show()
