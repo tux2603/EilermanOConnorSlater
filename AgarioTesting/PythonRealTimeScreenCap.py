@@ -9,13 +9,13 @@ from Xlib import display, X
 from PIL import Image
 from time import time, sleep
 
-W, H = 600, 400
+W, H = 1920, 1080
 dsp = display.Display()
 root = dsp.screen().root
 
 frames = []
 
-NUM_FRAMES = 10000
+NUM_FRAMES = 100
 start = time()
 for i in range(NUM_FRAMES):
     raw = root.get_image(0, 0, W, H, X.ZPixmap, 0xffffffff)
