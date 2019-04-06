@@ -151,7 +151,13 @@ if __name__ == '__main__':
             window.configure(width=WIDTH, height=HEIGHT)
             display.sync()
 
-        mouse.position = (centerX + 50 * cos(time()), centerY + 50 * sin(time()))
+        # Get the image of the screen
+        raw = window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)
+        image = Image.frombytes('RGB', (WIDTH, HEIGHT), raw._data['data'], 'raw', 'BGRX')
+
+        # Move in a circle
+        mouse.position = (centerX + 150 * cos(time()), centerY + 150 * sin(time()))
+        # mouse.position = (random() * 500, random() * 500)
         sleep(1 / 144)
 
     deathSound()
