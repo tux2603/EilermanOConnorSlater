@@ -64,12 +64,12 @@ def login():
 
 def deathSound():
     if SPEAK:
-        os.system('espeak  -p10 -s150 "oh no... I died!" &')
+        os.system('espeak "oh no... I died!" &')
 
 
 def captchaSound():
     if SPEAK:
-        os.system('espeak  -p10 -s80 "Curses. Foiled again" &')
+        os.system('espeak "Curses. Foiled again. Solve the damned captcha please" &')
 
 
 class DeathChecker(Thread):
