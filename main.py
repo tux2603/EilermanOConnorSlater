@@ -76,19 +76,19 @@ def login():
     p.typewrite('iRobot', interval=0.5 + random())
     sleep(0.76 + random())
     p.press('enter')
-    if SPEAK:
-        os.system('espeak -p00 -s80 "I wish to eat you" &')
+    say("I wish to eat you", 60)
     return ((loc.left + 0.5 * loc.width, loc.top + 0.5 * loc.height))
 
+def say(words, speed=100):
+    if SPEAK:
+        os.system('espeak -p00 -s{} -k60 "{}" &'.format(speed, words))
 
 def deathSound():
-    if SPEAK:
-        os.system('espeak -p00 "oh no... I died!" &')
+    say("oh no... I DIED!")
 
 
 def captchaSound():
-    if SPEAK:
-        os.system('espeak -p00 "Curses. Foiled again. I hate bloody captchas" &')
+    say("Curses. Foiled again. I hate bloody captchas")
 
 
 class DeathChecker(Thread):
