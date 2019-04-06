@@ -34,6 +34,12 @@ def openWindow():
     LEFT, TOP = window.get_geometry().x, window.get_geometry().y
 
 
+def moveRelAndClick(x, y, delay=0.5):
+    p.moveRel(x, y)
+    p.click()
+    sleep(delay)
+
+
 def login():
     # Find and click the play button
     p.moveTo(1, 1)
@@ -44,7 +50,24 @@ def login():
             break
     p.moveTo(x=loc.left + 0.5 * loc.width, y=loc.top + 0.5 * loc.height)
 
-    # Type in the name and startt
+    # Prep settings
+
+    # Gear Click
+    moveRelAndClick(-55, -60)
+
+    # Graphics Click
+    moveRelAndClick(0, 10)
+    moveRelAndClick(0, 120)
+
+    # Click Pushbutton settings
+    moveRelAndClick(3, -2)
+    moveRelAndClick(0, -48, 0)
+    moveRelAndClick(0, -32, 0)
+    moveRelAndClick(0, -16, 0)
+    moveRelAndClick(125, -45, 0)
+
+    # Type in the name and start
+    p.moveTo(x=loc.left + 0.5 * loc.width, y=loc.top + 0.5 * loc.height)
     p.moveRel(0, -20)
     p.click()
     sleep(0.5 + random())
@@ -107,10 +130,6 @@ if __name__ == '__main__':
     checker.start()
 
     mouse = Controller()
-
-    p.moveTo(playButtonCenter[0] + BOARD_DIMENSIONS[0], playButtonCenter[1] + BOARD_DIMENSIONS[1])
-    sleep(1)
-    p.moveRel(BOARD_DIMENSIONS[2], BOARD_DIMENSIONS[3])
 
     # Game Loop
     while not checker.isDead:
