@@ -8,6 +8,7 @@ import Xlib.display
 from random import random
 from time import time
 from threading import Thread
+from pynput.mouse import Button, Controller
 
 
 def openWindow():
@@ -61,19 +62,27 @@ def deathSound():
         os.system('espeak  -p10 -s150 "oh no... I died!" &')
 
 
+def captchaSound():
+    if SPEAK:
+        os.system('espeak  -p10 -s80 "Curses. Foiled again" &')
+
+
 class DeathChecker(Thread):
     def __init__(self):
         super().__init__()
         self.isDead = False
+        self.isDetected = False
 
     def run(self):
         while 1:
             loc = p.locateOnScreen('ReferenceImages/continueButton.png', confidence=0.9)
             if loc is not None:
                 self.isDead = True
-
-    def checkIsDead(self):
-        return self.isDead
+                break
+            loc = p.locateOnScreen('ReferenceImages/captcha.png', confidence=0.9)
+            if loc is not None:
+                self.isDetected = True
+                break
 
 
 if __name__ == '__main__':
@@ -88,11 +97,17 @@ if __name__ == '__main__':
     checker = DeathChecker()
     checker.start()
 
-    # Game Loop
-    while not checker.isDead:
-        t0 = time()
-        p.moveTo(random() * 500, random() * 500)
-        print('{} FPS'.format(1 / (time() - t0)))
+    mouse = Controller()
 
-    deathSound()
+    # Game Loop
+    while not checker.isDead and not checker.isDetected:
+        t0 = time()
+        mouse.position = (random() * 500, random() * 500)
+        sleep(1 / 144)
+        print('{} FPS'.format(round(1 / (time() - t0), 3)))
+
+    if checker.isDead:
+        deathSound()
+    else:
+        captchaSound()
     print('we ded')
