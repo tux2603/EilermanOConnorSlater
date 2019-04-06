@@ -11,11 +11,11 @@ from threading import Thread
 
 
 def openWindow():
-    global window, WIDTH, HEIGHT
+    global window, WIDTH, HEIGHT, display
     os.system('clear')
 
     # Open the browser
-    os.system('firefox -private -new-window "https://agar.io" &')
+    os.system('firefox "https://agar.io" -new-window -private &')
     sleep(2)
 
     # Resize the browser
@@ -27,10 +27,7 @@ def openWindow():
         '_NET_ACTIVE_WINDOW'), Xlib.X.AnyPropertyType).value[0]
     window = display.create_resource_object('window', windowID)
     window.configure(width=WIDTH, height=HEIGHT)
-    window.set_wm_name("iRobot: prepare to be assimiliated")
     display.sync()
-    print(dir(window))
-    print(vars(window))
 
 
 # def getWindowPosition():
@@ -64,12 +61,12 @@ def login():
 
 def deathSound():
     if SPEAK:
-        os.system('espeak "oh no... I died!" &')
+        os.system('espeak -p00 "oh no... I died!" &')
 
 
 def captchaSound():
     if SPEAK:
-        os.system('espeak "Curses. Foiled again. Solve the damned captcha please" &')
+        os.system('espeak -p00 "Curses. Foiled again. I hate bloody captchas" &')
 
 
 class DeathChecker(Thread):
@@ -87,11 +84,11 @@ class DeathChecker(Thread):
             loc = p.locateOnScreen('ReferenceImages/captcha.png', confidence=0.9)
             if loc is not None:
                 self.isDetected = True
-                break
 
 
 if __name__ == '__main__':
     WIDTH, HEIGHT = 600, 400
+    display = None
     SPEAK = True
     window = None
     dead = False
@@ -108,9 +105,21 @@ if __name__ == '__main__':
     # Game Loop
     while not checker.isDead:
         if checker.isDetected:
+            # Ask to solve captcha
             captchaSound()
-            input("press enter when you are done")
+            window.configure(width=1500, height=900)
+            display.sync()
+            sleep(1)
+
+            # Wait for captcha to be solved
+            while 1:
+                if p.locateOnScreen('ReferenceImages/captchaSolve.png', confidence=0.9) is None and p.locateOnScreen('ReferenceImages/captcha.png', confidence=0.9) is None:
+                    sleep(1)
+                    if p.locateOnScreen('ReferenceImages/captcha.png', confidence=0.9) is None:
+                        break
             checker.isDetected = False
+            window.configure(width=WIDTH, height=HEIGHT)
+            display.sync()
 
         t0 = time()
         mouse.position = (random() * 500, random() * 500)
@@ -119,7 +128,7 @@ if __name__ == '__main__':
 
     deathSound()
     print('we ded')
-    print(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff), type(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)))
-    raw = window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff), type(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff))
-    image = Image.frombytes('RGB', (WIDTH, HEIGHT), raw, 'raw', 'BGRX')
+    print(vars(window.get_image(0, 0, 10, 10, Xlib.X.ZPixmap, 0xffffffff)), type(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)))
+    raw = window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)
+    image = Image.frombytes('RGB', (WIDTH, HEIGHT), raw._data['data'], 'raw', 'BGRX')
     image.show()
