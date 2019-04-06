@@ -1,14 +1,13 @@
 import os
 import pyautogui as p
-import webbrowser
-import subprocess
-from time import sleep
 import Xlib
 import Xlib.display
-from random import random
-from time import time
-from threading import Thread
+
+from time import sleep, time
+from PIL import Image
 from pynput.mouse import Button, Controller
+from random import random
+from threading import Thread
 
 
 def openWindow():
@@ -32,6 +31,12 @@ def openWindow():
     display.sync()
     print(dir(window))
     print(vars(window))
+
+
+# def getWindowPosition():
+#     id = Xlib.display.Window
+#     parent = id.query_tree().parent
+#     return (parent.X, parent.Y)
 
 
 def login():
@@ -90,6 +95,7 @@ if __name__ == '__main__':
     SPEAK = True
     window = None
     dead = False
+
     openWindow()
     login()
 
@@ -111,3 +117,7 @@ if __name__ == '__main__':
     else:
         captchaSound()
     print('we ded')
+    print(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff), type(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)))
+    raw = window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff), type(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff))
+    image = Image.frombytes('RGB', (WIDTH, HEIGHT), raw, 'raw', 'BGRX')
+    image.show()
