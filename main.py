@@ -15,7 +15,7 @@ def openWindow():
     os.system('clear')
 
     # Open the browser
-    os.system('firefox -private "https://agar.io" -new-window &')
+    os.system('firefox -private -new-window "https://agar.io" &')
     sleep(2)
 
     # Resize the browser
@@ -106,16 +106,18 @@ if __name__ == '__main__':
     mouse = Controller()
 
     # Game Loop
-    while not checker.isDead and not checker.isDetected:
+    while not checker.isDead:
+        if checker.isDetected:
+            captchaSound()
+            input("press enter when you are done")
+            checker.isDetected = False
+
         t0 = time()
         mouse.position = (random() * 500, random() * 500)
         sleep(1 / 144)
         print('{} FPS'.format(round(1 / (time() - t0), 3)))
 
-    if checker.isDead:
-        deathSound()
-    else:
-        captchaSound()
+    deathSound()
     print('we ded')
     print(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff), type(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)))
     raw = window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff), type(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff))
