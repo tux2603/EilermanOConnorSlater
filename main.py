@@ -8,7 +8,7 @@ import Xlib.display
 from random import random
 
 
-if __name__ == '__main__':
+def openWindow():
     os.system('clear')
     # Window Size
     WIDTH, HEIGHT = 600, 400
@@ -25,10 +25,14 @@ if __name__ == '__main__':
     windowID = root.get_full_property(display.intern_atom('_NET_ACTIVE_WINDOW'), Xlib.X.AnyPropertyType).value[0]
     window = display.create_resource_object('window', windowID)
     window.configure(width=WIDTH, height=HEIGHT)
+    display.sync()
     print(dir(window))
     print(vars(window))
-    display.sync()
+    # print(window.get_image())
+    # print(window.get_geometry())
 
+
+def login():
     # Find and click the play button
     p.moveTo(1, 1)
     while 1:
@@ -47,5 +51,28 @@ if __name__ == '__main__':
     sleep(0.76 + random())
     p.press('enter')
 
-    # window.configure(width=1000, height=600)
-    # display.sync()
+
+def findContinueButton():
+    return p.locateOnScreen('ReferenceImages/continueButton.png', confidence=0.9)
+
+
+def clickContinue():
+    # Find and click the continue button
+    while 1:
+        loc = findContinueButton()
+        if loc is not None:
+            break
+    p.moveTo(x=loc.left + 0.5 * loc.width, y=loc.top + 0.5 * loc.height)
+    p.click()
+
+
+if __name__ == '__main__':
+    openWindow()
+    login()
+    # Game Loop
+    while 1:
+        if findContinueButton() is not None:
+            break
+
+        p.moveTo(random() * 500, random() * 500)
+    os.system('espeak "oh no... I died!"')
