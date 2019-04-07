@@ -1,4 +1,4 @@
-from math import sin, cos, pi
+from math import sin, cos, pi, atan2, sqrt
 from PIL import Image, ImageColor
 from time import time
 import numpy as np
@@ -12,13 +12,15 @@ from numba import jit
 class AI:
     def __init__(self, imageCenterX, imageCenterY):
         self.mode = 'defend'
-        self.angularRes = 3
+        self.angularRes = 4
         self.radialRes = 10
         self.numRings = 50
-        self.firstRing = 25
+        self.firstRing = 35
 
         self.imageCenterX = imageCenterX
         self.imageCenterY = imageCenterY
+
+        self.radiusHistory = []
 
         self.videoOut = VideoOutput(self.angularRes, self.radialRes, self.firstRing, self.numRings)
 
@@ -27,8 +29,55 @@ class AI:
         pass
 
     def __attack__(self, image):
-        # kill -9 $otherGuy
-        pass
+        image = image.convert('RGB')
+        image = np.array(image)
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        image = cv2.medianBlur(image, 5)
+        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 20, param1=30, param2=20, minRadius=0, maxRadius=0)
+        circles = np.uint16(np.around(circles))
+
+        circlesCondensed = circles[0]
+        usIndex = -1
+        maxRadius = 0
+        for i in range(len(circlesCondensed)):
+            if abs(300 - circlesCondensed[i][0]) < 25:
+                if abs(150 - circlesCondensed[i][1]) < 25:
+                    if circlesCondensed[i][2] > 20:
+                        if circlesCondensed[i][2] > maxRadius:
+                            maxRadius = circlesCondensed[i][2]
+                            usIndex = i
+
+        # Update Radius
+        if usIndex != -1:
+
+            self.radiusHistory.append(circlesCondensed[usIndex][2])
+            if len(self.radiusHistory) > 15:
+                self.radiusHistory.pop(0)
+            avgRadius = int(sum(self.radiusHistory) / len(self.radiusHistory) / 2)
+            self.firstRing = avgRadius + 15
+            print('Radius: {} px'.format(avgRadius))
+
+        # Find highest density of food
+        # target = 0
+        # for circle in circlesCondensed:
+        #     if circlesCondensed[i][2] < 15:
+
+        # Find closest food
+        targetIndex = 0
+        minDist = 1000000
+        for i, circle in enumerate(circlesCondensed):
+            if circle[2] < 15 and i != usIndex:
+                distToFood = sqrt((float(circle[0]) - float(circlesCondensed[usIndex][0]))**2 + (float(circle[1]) - float(circlesCondensed[usIndex][1]))**2)
+                if distToFood < minDist and distToFood > 1:
+                    minDist = distToFood
+                    targetIndex = i
+        # Compute trajectory
+        dY = float(circlesCondensed[targetIndex][1]) - float(circlesCondensed[usIndex][1])
+        dX = float(circlesCondensed[targetIndex][0]) - float(circlesCondensed[usIndex][0])
+        # print('Target: {}, {} at {} deg'.format(int(dX), int(dY), round(atan2(dY, dX), 2)))
+        print('Me: {}, {}\nIt: {}, {}'.format(int(circlesCondensed[usIndex][0]), int(circlesCondensed[usIndex][1]), int(circlesCondensed[targetIndex][0]), int(circlesCondensed[targetIndex][1])))
+        print('dX: {}, dY: {}'.format(dX, dY))
+        return atan2(dY, dX) * 180 / pi
 
     @jit
     def act(self, image):
@@ -65,7 +114,7 @@ class AI:
         for i in range(len(blobs)):
             for j in range(len(blobs[i])):
                 blobs[i][j] = 0 if arr[i][j] < 0 else counts[arr[i][j]]
-                if blobs[i][j] < 256 / (i + 1)**0.75:
+                if blobs[i][j] < 250 / (i + 10)**0.75:  # 250 / (i + 1)**0.75:
                     blobs[i][j] *= 0
 
         # Get the total blobbed danger in every direction
@@ -105,7 +154,8 @@ class AI:
                     break
 
             direction = index * self.angularRes
-            print(direction)
+        else:
+            direction = self.__attack__(image)
 
         # Display the blobbed danger in every direction
         for i in range(len(dangers)):

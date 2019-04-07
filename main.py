@@ -75,7 +75,7 @@ def login():
     sleep(0.5 + random())
     faker = Faker()
     name = faker.name().split(' ')[0]  # generate a random first name for the bot
-    p.typewrite(name, interval=0.1)  # enter the name into the site's text field for entering name
+    p.typewrite("⌨", interval=0.1)  # enter the name into the site's text field for entering name
     if SPEAK:
         say("Hi! I'm {}! I wish to eat you!".format(name))
         sleep(6)
@@ -168,16 +168,16 @@ if __name__ == '__main__':
             checker.isDetected = False
             window.configure(width=WIDTH, height=HEIGHT)
             display.sync()
+        else:
+            # Get the image of the screen
+            raw = window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)
+            image = Image.frombytes('RGB', (WIDTH, HEIGHT), raw._data['data'], 'raw', 'BGRX')
 
-        # Get the image of the screen
-        raw = window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)
-        image = Image.frombytes('RGB', (WIDTH, HEIGHT), raw._data['data'], 'raw', 'BGRX')
-
-        # Act on it
-        targetAngle = ai.act(image) * pi / 180
-        r = 100
-        x = cos(targetAngle) * r + centerX
-        y = sin(targetAngle) * r + centerY
-        mouse.position = (x, y)
+            # Act on it
+            targetAngle = ai.act(image) * pi / 180
+            r = 150
+            x = cos(targetAngle) * r + centerX
+            y = sin(targetAngle) * r + centerY
+            mouse.position = (x, y)
 
     onDeath()
