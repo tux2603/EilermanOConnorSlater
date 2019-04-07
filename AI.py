@@ -66,18 +66,18 @@ class AI:
         # for circle in circlesCondensed:
         #     if circlesCondensed[i][2] < 15:
 
-        if time() > self.targetChange + 5:
+        if time() > self.targetChange + 2.5:
             # Find closest food
             targetIndex = 0
             minDist = 1000000
             for i, circle in enumerate(circlesCondensed):
-                if circle[2] < 30 and i != usIndex:  # and circle[2] > self.imageCenterY - 150:
+                if circle[2] < 60 and i != usIndex:  # and circle[2] > self.imageCenterY - 150:
                     distToFood = sqrt((float(circle[0]) - USX)**2 + (float(circle[1]) - USY)**2)
                     if distToFood < minDist and distToFood > 1:
                         minDist = distToFood
                         targetIndex = i
             # Compute trajectory
-            dY = float(circlesCondensed[targetIndex][1]) - USY
+            dY = (float(circlesCondensed[targetIndex][1]) - USY)
             dX = float(circlesCondensed[targetIndex][0]) - USX
 
             self.targetChange = time()
@@ -86,7 +86,7 @@ class AI:
         # Making food array
         foodArr = []
         for circle in circlesCondensed:
-            if circle[2] < 30 and circle[1] > self.imageCenterY - 150:
+            if circle[2] < 60 and circle[1] > self.imageCenterY - 150:
                 foodArr.append((int(circle[0]) - USX, int(circle[1]) - USY))
 
         return self.lastTarget, foodArr
@@ -152,7 +152,6 @@ class AI:
 
         numIterations = 0
         if dangerFound:
-            self.targetChange = time() - 100
             while dangerInDirection[numIterations % 2].count(0) > 1:
                 for i in range(len(dangers)):
                     if dangerInDirection[numIterations % 2][i - 1] > 0 or \
@@ -169,6 +168,8 @@ class AI:
                     break
 
             direction = index * self.angularRes
+            self.targetChange = time()
+            self.lastTarget = direction
         else:
             direction, foodArr = self.__attack__(image)
 

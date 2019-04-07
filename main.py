@@ -75,7 +75,7 @@ def login():
     sleep(0.5 + random())
     faker = Faker()
     name = faker.name().split(' ')[0]  # generate a random first name for the bot
-    p.typewrite("⌨", interval=0.1)  # enter the name into the site's text field for entering name
+    p.typewrite(name, interval=0.1)  # enter the name into the site's text field for entering name
     if SPEAK:
         say("Hi! I'm {}! I wish to eat you!".format(name))
         sleep(6)
@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
             # Act on it
             targetAngle = ai.act(image) * pi / 180
-            r = 200
+            r = 150
             x = cos(targetAngle) * r + centerX
             y = sin(targetAngle) * r + centerY
             mouse.position = (x, y)
