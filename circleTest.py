@@ -5,7 +5,7 @@ import os
 
 os.system('clear')
 
-img = cv2.imread('Screenshots/screenshot_600x400_2019-04-06 20-04-38.png', 0)
+img = cv2.imread('Screenshots/screenshot_600x400_2019-04-06 20-04-42.png', 0)
 img = cv2.medianBlur(img, 5)
 cimg = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
@@ -25,14 +25,14 @@ circles = circles[0]
 usIndex = 0
 minDistance = 10000000
 for i in range(len(circles)):
-    print(circles[i][2])
     if circles[i][2] > 6:
+        print(circles[i][2])
         if abs(circles[i][0] - 2 * circles[i][1]) < minDistance:
             minDistance = abs(circles[i][0] - 2 * circles[i][1])
             usIndex = i
 
-print('Us: {}'.format(circles[i]))
-cv2.circle(cimg, (circles[i][0], circles[i][1]), circles[i][2], (255, 0, 0), 2)
+print('Us: {}'.format(circles[usIndex]))
+cv2.circle(cimg, (circles[usIndex][0], circles[usIndex][1]), circles[usIndex][2], (255, 0, 0), 2)
 
 # ================================================
 
