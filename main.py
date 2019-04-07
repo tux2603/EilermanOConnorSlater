@@ -78,13 +78,14 @@ def login():
     say("I wish to eat you", 60)
     return ((loc.left + 0.5 * loc.width, loc.top + 0.5 * loc.height))
 
+
 def say(words, speed=100):
     if SPEAK:
         os.system('espeak -p00 -s{} -k60 "{}" &'.format(speed, words))
 
+
 def onDeath():
-    if SPEAK:
-        os.system('espeak -p00 "oh no... I died!" &')
+    say("oh no... I died!")
     window.configure(width=1500, height=900)
     display.sync()
     sleep(2)
@@ -126,7 +127,7 @@ if __name__ == '__main__':
     playButtonCenter = login()
 
     # Board dimensions in relation to center of play button
-    BOARD_DIMENSIONS = [-300, -82, 600, 300]  # left, top, width, height
+    BOARD_DIMENSIONS = [-300, -82, 600, 320]  # left, top, width, height
 
     # Calculate the center of the board (x, y)
     centerX = playButtonCenter[0] + BOARD_DIMENSIONS[0] + BOARD_DIMENSIONS[2] / 2
@@ -165,7 +166,7 @@ if __name__ == '__main__':
         # Move in a circle
         mouse.position = (centerX + 150 * cos(time()), centerY + 150 * sin(time()))
         # mouse.position = (random() * 500, random() * 500)
-        sleep(1 / 144)
+        sleep(1 / 60)
 
     onDeath()
 
