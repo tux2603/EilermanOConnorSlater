@@ -17,7 +17,6 @@ class VideoOutput:
         pygame.init()
         self.display = pygame.display.set_mode((500, 500))
 
-
     @jit
     def displayFrame(self, arr):
         # Generate blips
