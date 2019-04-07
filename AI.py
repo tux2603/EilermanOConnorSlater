@@ -1,5 +1,6 @@
 from math import sin, cos, pi
 from PIL import Image, ImageColor
+from time import time
 import numpy as np
 import colorsys
 import cv2
@@ -24,13 +25,15 @@ class AI:
         pass
 
     def act(self, image):
+        direction = time()
         if self.mode == 'attack':
-            self.__attack__(image)
+            direction = self.__attack__(image)
         elif self.mode == 'defend':
-            self.__defend__(image)
+            direction = self.__defend__(image)
         else:
             # TODO: Any other modes?
             pass
+        return direction
 
     def __attack__(self, image):
         # kill -9 $otherGuy
@@ -53,9 +56,29 @@ class AI:
                 # Get hue and saturation out of pixel color
                 hsv = colorsys.rgb_to_hsv(pixelColor[0], pixelColor[1], pixelColor[2])
                 arr[θ][ring] = -1 if hsv[1] < 0.7 or hsv[2] < 0.9 else hsv[0] * 255
-        # print(arr)
-        # print(ArrToVideo.setArr(arr))
+
+        dangers = np.zeros(len(arr))
+        direction = time()
+
+        for i in range(len(dangers)):
+            dangers[i] += 0.25 * np.sum(arr[(i - 2) % len(dangers)])
+            dangers[i] += 0.5 * np.sum(arr[(i - 1) % len(dangers)])
+            dangers[i] += np.sum(arr[i % len(dangers)])
+            dangers[i] += 0.5 * np.sum(arr[(i + 1) % len(dangers)])
+            dangers[i] += 0.25 * np.sum(arr[(i + 2) % len(dangers)])
+
         self.videoOut.displayFrame(arr)
+
+        minDanger = dangers[0]
+        minDangerIndex = 0
+
+        for i in range(1,len(dangers)):
+            if dangers[i] < minDanger:
+                minDanger = dangers[i]
+                minDangerIndex = i
+
+        return minDangerIndex * self.angularRes
+
 
 if __name__ == '__main__':
     ai = AI(300, 260)
