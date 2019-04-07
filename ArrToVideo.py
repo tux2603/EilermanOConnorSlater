@@ -18,18 +18,24 @@ class VideoOutput:
         self.display = pygame.display.set_mode((500, 500))
         pygame.display.set_caption("DANJA RADAARR")
 
-    @jit
-    def displayFrame(self, arr):
+    def displayFrame(self, arr, foodArr=[]):
+        self.display.fill((0, 0, 0))
         # Generate blips
+        scale = 0.7
         circleRadius = 1
-        rFactor = 8
+        rFactor = self.radialRes * scale
 
+        # Food array
+        for food in foodArr:
+            pygame.draw.circle(self.display, (255, 255, 255), (int(food[0] * scale + 250), int(food[1] * scale + 250)), 8)
+            pygame.draw.circle(self.display, (0, 0, 0), (int(food[0] * scale + 250), int(food[1] * scale + 250)), 6)
+
+        # Danger Radar
         for θ in range(len(arr)):
             for ring in range(len(arr[θ])):
-                if (ring % 2 == 0 and θ % 1 == 0) or False:
+                if (ring % 1 == 0 and θ % 1 == 0) or False:
                     hsv = (0, 0, 0) if arr[θ][ring] < 0 else (arr[θ][ring] / 255, 1, 255)
 
-                    rFactor = 2
                     x = 250 + int(cos(θ * self.angularRes * pi / 180) * (ring * rFactor + self.firstRing))
                     y = 250 + int(sin(θ * self.angularRes * pi / 180) * (ring * rFactor + self.firstRing))
 

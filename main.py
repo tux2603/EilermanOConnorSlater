@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
             # Act on it
             targetAngle = ai.act(image) * pi / 180
-            r = 150
+            r = 200
             x = cos(targetAngle) * r + centerX
             y = sin(targetAngle) * r + centerY
             mouse.position = (x, y)
