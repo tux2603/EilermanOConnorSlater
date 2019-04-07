@@ -21,14 +21,16 @@ class VideoOutput:
     def displayFrame(self, arr):
         # Generate blips
         circleRadius = 1
+        rFactor = 4
 
         for θ in range(len(arr)):
             for ring in range(len(arr[θ])):
                 if (ring < 50 and θ % 1 == 0) or False:
                     hsv = (0, 0, 0) if arr[θ][ring] < 0 else (arr[θ][ring] / 255, 1, 255)
 
-                    x = 250 + int(cos(θ * self.angularRes * pi / 180) * (ring * self.radialRes + self.firstRing))
-                    y = 250 + int(sin(θ * self.angularRes * pi / 180) * (ring * self.radialRes + self.firstRing))
+                    rFactor = 2
+                    x = 250 + int(cos(θ * self.angularRes * pi / 180) * (ring * rFactor + self.firstRing))
+                    y = 250 + int(sin(θ * self.angularRes * pi / 180) * (ring * rFactor + self.firstRing))
 
                     rgb = colorsys.hsv_to_rgb(hsv[0], hsv[1], hsv[2])
                     intRGB = (int(rgb[0]), int(rgb[1]), int(rgb[2]))

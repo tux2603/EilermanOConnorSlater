@@ -58,11 +58,8 @@ def login():
     # Gear Click
     moveRelAndClick(-55, -60)
 
-    # Graphics Click
-    moveRelAndClick(0, 10)
-    moveRelAndClick(0, 120)
-
     # Click Pushbutton settings
+    p.moveRel(0, 130)
     moveRelAndClick(3, -2)
     moveRelAndClick(0, -48, 0)
     moveRelAndClick(0, -32, 0)
