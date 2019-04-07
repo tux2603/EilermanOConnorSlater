@@ -14,7 +14,7 @@ class AI:
         self.mode = 'defend'
         self.angularRes = 3
         self.radialRes = 10
-        self.numRings = 80
+        self.numRings = 50
         self.firstRing = 25
 
         self.imageCenterX = imageCenterX
@@ -65,7 +65,7 @@ class AI:
         for i in range(len(blobs)):
             for j in range(len(blobs[i])):
                 blobs[i][j] = 0 if arr[i][j] < 0 else counts[arr[i][j]]
-                if blobs[i][j] < 30:
+                if blobs[i][j] < 256 / (i + 1)**0.75:
                     blobs[i][j] *= 0
 
         # Get the total blobbed danger in every direction
