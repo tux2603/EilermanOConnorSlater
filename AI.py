@@ -26,33 +26,23 @@ class AI:
         # Set first ring to zero, expand outwards until different color, add res/2
         pass
 
-    def act(self, image):
-        direction = time()
-        if self.mode == 'attack':
-            direction = self.__attack__(image)
-        elif self.mode == 'defend':
-            direction = self.__defend__(image)
-        else:
-            # TODO: Any other modes?
-            pass
-        return direction
-
     def __attack__(self, image):
         # kill -9 $otherGuy
         pass
 
     @jit
-    def __defend__(self, image):
+    def act(self, image):
         # Create array to store color values read in in
         arr = np.zeros((360 // self.angularRes, self.numRings), dtype=np.int16)
         blobs = np.zeros((360 // self.angularRes, self.numRings), dtype=np.int64)
 
         for ring in range(self.numRings):
             for θ in range(360 // self.angularRes):
-                x, y = cos(θ * self.angularRes * pi / 180) * (ring * self.radialRes + self.firstRing), sin(θ * self.angularRes * pi / 180) * (ring * self.radialRes + self.firstRing)
+                x = cos(θ * self.angularRes * pi / 180) * (ring * self.radialRes + self.firstRing)
+                y = sin(θ * self.angularRes * pi / 180) * (ring * self.radialRes + self.firstRing)
                 x += self.imageCenterX
                 y += self.imageCenterY
-                if x < 0 or x > image.size[0] - 1 or y < self.imageCenterY - 81 or y > image.size[1] - 1:
+                if x < 0 or x > image.size[0] - 1 or y < self.imageCenterY - 150 or y > image.size[1] - 1:
                     pixelColor = (0, 0, 0)
                 else:
                     pixelColor = image.getpixel((x, y))
@@ -83,36 +73,34 @@ class AI:
         for i in range(len(dangers)):
             dangers[i] += np.sum(blobs[i % len(dangers)])
 
-        # Start looking for the direction farthest from any danger
-        dangerInDirection = []
-        newDangerInDirection = []
+        dangerInDirection = [[], []]
         dangerFound = False
-
+        # Start looking for the direction farthest from any danger
         for i in range(len(dangers)):
             if dangers[i] > 0:
-                dangerInDirection.append(1)
-                newDangerInDirection.append(1)
+                dangerInDirection[0].append(1)
+                dangerInDirection[1].append(1)
                 dangerFound = True
             else:
-                dangerInDirection.append(0)
-                newDangerInDirection.append(0)
+                dangerInDirection[0].append(0)
+                dangerInDirection[1].append(0)
 
-        direction = time() * 75
+        direction = time() * 100
 
+        numIterations = 0
         if dangerFound:
-            while dangerInDirection.count(0) > 1:
-                for i in range(len(dangers)): newDangerInDirection[i] = dangerInDirection[i]
+            while dangerInDirection[numIterations % 2].count(0) > 1:
                 for i in range(len(dangers)):
-                    if dangerInDirection[i - 1] > 0 or dangerInDirection[i] > 0 or dangerInDirection[(i + 1) % len(dangers)] > 0:
-                        newDangerInDirection[i] += 1
-                for i in range(len(dangers)): dangerInDirection[i] = newDangerInDirection[i]
-                print(dangerInDirection)
-            print(50 * "#")
+                    if dangerInDirection[numIterations % 2][i - 1] > 0 or \
+                            dangerInDirection[numIterations % 2][i] > 0 or \
+                            dangerInDirection[numIterations % 2][(i + 1) % len(dangers)] > 0:
+                        dangerInDirection[(numIterations + 1) % 2][i] = dangerInDirection[numIterations % 2][i] + 1
+                numIterations += 1
 
             index = 0
 
             for i in range(len(dangers)):
-                if dangerInDirection[i] <= 1:
+                if dangerInDirection[numIterations % 2][i] <= 1:
                     index = i
                     break
 
@@ -120,8 +108,8 @@ class AI:
             print(direction)
 
         # Display the blobbed danger in every direction
-        for i in range(len(dangerInDirection)):
-            blobs[i][0] = 200 - dangerInDirection[i] * 10
+        for i in range(len(dangers)):
+            blobs[i][0] = 200 - dangerInDirection[numIterations % 2][i] * 10
         self.videoOut.displayFrame(blobs)
 
         return direction

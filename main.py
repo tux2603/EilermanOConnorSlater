@@ -177,10 +177,10 @@ if __name__ == '__main__':
         image = Image.frombytes('RGB', (WIDTH, HEIGHT), raw._data['data'], 'raw', 'BGRX')
 
         # Act on it
-        targetθ = ai.act(image) * pi / 180
+        targetAngle = ai.act(image) * pi / 180
         r = 100
-        x = cos(targetθ) * r + centerX
-        y = sin(targetθ) * r + centerY
+        x = cos(targetAngle) * r + centerX
+        y = sin(targetAngle) * r + centerY
         mouse.position = (x, y)
 
     onDeath()
