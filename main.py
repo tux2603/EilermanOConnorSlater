@@ -158,9 +158,9 @@ if __name__ == '__main__':
 
             # Wait for captcha to be solved
             while 1:
-                if p.locateOnScreen('ReferenceImages/captchaSolve.png', confidence=0.9) is None and p.locateOnScreen('ReferenceImages/captcha.png', confidence=0.9) is None:
+                if p.locateOnScreen('ReferenceImages/captchaSolve.png', confidence=0.85) is None and p.locateOnScreen('ReferenceImages/captcha.png', confidence=0.85) is None:
                     sleep(1)
-                    if p.locateOnScreen('ReferenceImages/captcha.png', confidence=0.9) is None:
+                    if p.locateOnScreen('ReferenceImages/captcha.png', confidence=0.85) is None:
                         break
             checker.isDetected = False
             window.configure(width=WIDTH, height=HEIGHT)

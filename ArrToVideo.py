@@ -18,11 +18,11 @@ class VideoOutput:
 
     def displayFrame(self, arr):
         # Generate blips
-        circleRadius = 2
+        circleRadius = 1
 
         for θ in range(len(arr)):
             for ring in range(len(arr[θ])):
-                if θ % 3 == 0:
+                if θ % 3 == 0 or True:
                     hsv = (0, 0, 0) if arr[θ][ring] < 0 else (arr[θ][ring] / 255, 1, 255)
 
                     x = 250 + int(cos(θ * self.angularRes * pi / 180) * (ring * self.radialRes + self.firstRing))
