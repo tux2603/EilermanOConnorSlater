@@ -3,6 +3,7 @@ import numpy as np
 import colorsys
 import os
 from math import sin, cos, pi
+from numba import jit
 
 
 class VideoOutput:
@@ -12,17 +13,19 @@ class VideoOutput:
         self.firstRing = firstRing
         self.numRings = numRings
 
-        os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (1920 - 500, 100)
+        os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (1120, 100)
         pygame.init()
         self.display = pygame.display.set_mode((500, 500))
 
+
+    @jit
     def displayFrame(self, arr):
         # Generate blips
         circleRadius = 1
 
         for θ in range(len(arr)):
             for ring in range(len(arr[θ])):
-                if θ % 3 == 0 or True:
+                if (ring < 50 and θ % 1 == 0) or False:
                     hsv = (0, 0, 0) if arr[θ][ring] < 0 else (arr[θ][ring] / 255, 1, 255)
 
                     x = 250 + int(cos(θ * self.angularRes * pi / 180) * (ring * self.radialRes + self.firstRing))

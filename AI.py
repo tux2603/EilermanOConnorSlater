@@ -6,14 +6,15 @@ import collections
 import colorsys
 import cv2
 from ArrToVideo import VideoOutput
+from numba import jit
 
 
 class AI:
     def __init__(self, imageCenterX, imageCenterY):
         self.mode = 'defend'
-        self.angularRes = 1
-        self.radialRes = 5
-        self.numRings = 30
+        self.angularRes = 3
+        self.radialRes = 10
+        self.numRings = 80
         self.firstRing = 25
 
         self.imageCenterX = imageCenterX
@@ -38,9 +39,9 @@ class AI:
 
     def __attack__(self, image):
         # kill -9 $otherGuy
-
         pass
 
+    @jit
     def __defend__(self, image):
         # Create array to store color values read in in
         arr = np.zeros((360 // self.angularRes, self.numRings), dtype=np.int16)
@@ -62,6 +63,7 @@ class AI:
 
         counts = {}
 
+        # Get the frequency of colors
         for i in range(len(arr)):
             for j in range(len(arr[i])):
                 if arr[i][j] in counts.keys():
@@ -69,44 +71,57 @@ class AI:
                 else:
                     counts[arr[i][j]] = 1
 
+        # Blobify everything (danger map)
         for i in range(len(blobs)):
             for j in range(len(blobs[i])):
                 blobs[i][j] = 0 if arr[i][j] < 0 else counts[arr[i][j]]
-                if blobs[i][j] < 70:
-                    blobs[i][j] *= -0.5
-                else:
-                    blobs[i][j] **= 4
+                if blobs[i][j] < 30:
+                    blobs[i][j] *= 0
 
+        # Get the total blobbed danger in every direction
         dangers = np.zeros(len(blobs))
-        direction = time()
-
         for i in range(len(dangers)):
-            dangers[i] += 0.25 * np.sum(blobs[(i - 4) % len(dangers)])
-            dangers[i] += 0.25 * np.sum(blobs[(i - 3) % len(dangers)])
-            dangers[i] += 0.25 * np.sum(blobs[(i - 2) % len(dangers)])
-            dangers[i] += 0.5 * np.sum(blobs[(i - 1) % len(dangers)])
             dangers[i] += np.sum(blobs[i % len(dangers)])
-            dangers[i] += 0.5 * np.sum(blobs[(i + 1) % len(dangers)])
-            dangers[i] += 0.25 * np.sum(blobs[(i + 2) % len(dangers)])
-            dangers[i] += 0.25 * np.sum(blobs[(i + 3) % len(dangers)])
-            dangers[i] += 0.25 * np.sum(blobs[(i + 4) % len(dangers)])
+
+        # Start looking for the direction farthest from any danger
+        dangerInDirection = []
+        newDangerInDirection = []
+        dangerFound = False
 
         for i in range(len(dangers)):
-            blobs[i][0] = (dangers[i] + 70) / 200
+            if dangers[i] > 0:
+                dangerInDirection.append(1)
+                newDangerInDirection.append(1)
+                dangerFound = True
+            else:
+                dangerInDirection.append(0)
+                newDangerInDirection.append(0)
 
+        direction = time() * 75
+
+        if dangerFound:
+            while dangerInDirection.count(0) > 1:
+                for i in range(len(dangers)): newDangerInDirection[i] = dangerInDirection[i]
+                for i in range(len(dangers)):
+                    if dangerInDirection[i - 1] > 0 or dangerInDirection[i] > 0 or dangerInDirection[(i + 1) % len(dangers)] > 0:
+                        newDangerInDirection[i] += 1
+                for i in range(len(dangers)): dangerInDirection[i] = newDangerInDirection[i]
+                print(dangerInDirection)
+            print(50 * "#")
+
+            index = 0
+
+            for i in range(len(dangers)):
+                if dangerInDirection[i] <= 1:
+                    index = i
+                    break
+
+            direction = index * self.angularRes
+            print(direction)
+
+        # Display the blobbed danger in every direction
+        for i in range(len(dangerInDirection)):
+            blobs[i][0] = 200 - dangerInDirection[i] * 10
         self.videoOut.displayFrame(blobs)
 
-        maxDanger = dangers[0]
-        maxDangerIndex = 0
-
-        for i in range(1, len(dangers)):
-            if dangers[i] > maxDanger:
-                maxDanger = dangers[i]
-                maxDangerIndex = i
-
-        return maxDangerIndex * self.angularRes + 180
-
-
-if __name__ == '__main__':
-    ai = AI(300, 260)
-    ai.defend('')
+        return direction

@@ -5,13 +5,14 @@ import pyautogui as p
 import Xlib
 import Xlib.display
 
-from math import sin, cos
+from math import sin, cos, pi
 from time import sleep, time
 from PIL import Image
 from pynput.mouse import Button, Controller
 from random import random
 from threading import Thread
 from AI import AI
+from numba import jit
 
 
 def openWindow():
@@ -35,12 +36,14 @@ def openWindow():
     LEFT, TOP = window.get_geometry().x, window.get_geometry().y
 
 
+@jit
 def moveRelAndClick(x, y, delay=0.5):
     p.moveRel(x, y)
     p.click()
     sleep(delay)
 
 
+@jit
 def login():
     # Find and click the play button
     p.moveTo(1, 1)
@@ -74,8 +77,8 @@ def login():
     p.hotkey('ctrl', 'a')
     sleep(0.5 + random())
     faker = Faker()
-    name = faker.name().split(' ')[0]
-    p.typewrite(name, interval=0.1)
+    name = faker.name().split(' ')[0]  # generate a random first name for the bot
+    p.typewrite(name, interval=0.1)  # enter the name into the site's text field for entering name
     if SPEAK:
         say("Hi! I'm {}! I wish to eat you!".format(name))
         sleep(6)
@@ -83,11 +86,13 @@ def login():
     return ((loc.left + 0.5 * loc.width, loc.top + 0.5 * loc.height))
 
 
+@jit
 def say(words, speed=150):
     if SPEAK:
         os.system('espeak -p00 -s{} -k60 "{}" &'.format(speed, words))
 
 
+@jit
 def onDeath():
     say("oh no... Someone ate me!")
     window.configure(width=1500, height=900)
@@ -95,9 +100,10 @@ def onDeath():
     sleep(2)
     raw = window.get_image(0, 0, 1500, 900, Xlib.X.ZPixmap, 0xffffffff)
     image = Image.frombytes('RGB', (1500, 900), raw._data['data'], 'raw', 'BGRX')
-    image.save('deaths/death-{}.png'.format(datetime.now()))
+    image.save('deaths/death-{}.png'.format(datetime.now()))  # save screenshot of gameover screen
 
 
+@jit
 def captchaSound():
     say("Curses. Foiled again. I hate bloody captchas")
 
@@ -122,7 +128,7 @@ class DeathChecker(Thread):
 if __name__ == '__main__':
     WIDTH, HEIGHT, TOP, LEFT = 600, 400, 0, 0
     display = None
-    SPEAK = False
+    SPEAK = False  # if true, enable bash espeak functionaliy
     window = None
     dead = False
 
@@ -171,10 +177,10 @@ if __name__ == '__main__':
         image = Image.frombytes('RGB', (WIDTH, HEIGHT), raw._data['data'], 'raw', 'BGRX')
 
         # Act on it
-        targetθ = ai.act(image)
-        r = 50
-        x = cos(targetθ) * 100 + centerX
-        y = sin(targetθ) * 100 + centerY
+        targetθ = ai.act(image) * pi / 180
+        r = 100
+        x = cos(targetθ) * r + centerX
+        y = sin(targetθ) * r + centerY
         mouse.position = (x, y)
 
     onDeath()
