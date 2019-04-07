@@ -1,3 +1,5 @@
+from datetime import datetime
+from faker import Faker
 import os
 import pyautogui as p
 import Xlib
@@ -9,8 +11,7 @@ from PIL import Image
 from pynput.mouse import Button, Controller
 from random import random
 from threading import Thread
-
-from circles import findCircles
+from AI import AI
 
 
 def openWindow():
@@ -51,7 +52,6 @@ def login():
     p.moveTo(x=loc.left + 0.5 * loc.width, y=loc.top + 0.5 * loc.height)
 
     # Prep settings
-
     # Gear Click
     moveRelAndClick(-55, -60)
 
@@ -73,22 +73,33 @@ def login():
     sleep(0.5 + random())
     p.hotkey('ctrl', 'a')
     sleep(0.5 + random())
-    p.typewrite('iRobot', interval=0.5 + random())
-    sleep(0.76 + random())
-    p.press('enter')
+    faker = Faker()
+    name = faker.name().split(' ')[0]
+    p.typewrite(name, interval=0.1)
     if SPEAK:
-        os.system('espeak -p00 -s80 "I wish to eat you" &')
+        say("Hi! I'm {}! I wish to eat you!".format(name))
+        sleep(6)
+    p.press('enter')
     return ((loc.left + 0.5 * loc.width, loc.top + 0.5 * loc.height))
 
 
-def deathSound():
+def say(words, speed=150):
     if SPEAK:
-        os.system('espeak -p00 "oh no... I died!" &')
+        os.system('espeak -p00 -s{} -k60 "{}" &'.format(speed, words))
+
+
+def onDeath():
+    say("oh no... Someone ate me!")
+    window.configure(width=1500, height=900)
+    display.sync()
+    sleep(2)
+    raw = window.get_image(0, 0, 1500, 900, Xlib.X.ZPixmap, 0xffffffff)
+    image = Image.frombytes('RGB', (1500, 900), raw._data['data'], 'raw', 'BGRX')
+    image.save('deaths/death-{}.png'.format(datetime.now()))
 
 
 def captchaSound():
-    if SPEAK:
-        os.system('espeak -p00 "Curses. Foiled again. I hate bloody captchas" &')
+    say("Curses. Foiled again. I hate bloody captchas")
 
 
 class DeathChecker(Thread):
@@ -111,7 +122,7 @@ class DeathChecker(Thread):
 if __name__ == '__main__':
     WIDTH, HEIGHT, TOP, LEFT = 600, 400, 0, 0
     display = None
-    SPEAK = False
+    SPEAK = True
     window = None
     dead = False
 
@@ -124,6 +135,10 @@ if __name__ == '__main__':
     # Calculate the center of the board (x, y)
     centerX = playButtonCenter[0] + BOARD_DIMENSIONS[0] + BOARD_DIMENSIONS[2] / 2
     centerY = playButtonCenter[1] + BOARD_DIMENSIONS[1] + BOARD_DIMENSIONS[3] / 2
+
+    # Move mouse to middle
+    p.moveTo(centerX, centerY)
+    ai = AI(WIDTH / 2, 240)
 
     # Starting death checking to kill program
     checker = DeathChecker()
@@ -154,17 +169,11 @@ if __name__ == '__main__':
         # Get the image of the screen
         raw = window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)
         image = Image.frombytes('RGB', (WIDTH, HEIGHT), raw._data['data'], 'raw', 'BGRX')
+        ai.act(image)
 
         # Move in a circle
         mouse.position = (centerX + 150 * cos(time()), centerY + 150 * sin(time()))
         # mouse.position = (random() * 500, random() * 500)
-        sleep(1 / 144)
+        sleep(1 / 60)
 
-    deathSound()
-    print('we ded')
-    print(vars(window.get_image(0, 0, 10, 10, Xlib.X.ZPixmap, 0xffffffff)), type(window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)))
-    raw = window.get_image(0, 0, WIDTH, HEIGHT, Xlib.X.ZPixmap, 0xffffffff)
-    image = Image.frombytes('RGB', (WIDTH, HEIGHT), raw._data['data'], 'raw', 'BGRX')
-
-    findCircles(image)
-    image.show()
+    onDeath()
