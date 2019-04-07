@@ -179,5 +179,6 @@ if __name__ == '__main__':
             x = cos(targetAngle) * r + centerX
             y = sin(targetAngle) * r + centerY
             mouse.position = (x, y)
+        sleep(1 / 60)
 
     onDeath()
